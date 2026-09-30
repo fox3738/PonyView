@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <!-- 主项目是 net8.0-windows 的 WinForms 程序，测试项目需同框架 + 同 RID 才能引用并使用 System.Drawing -->
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWindowsForms>true</UseWindowsForms>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <PlatformTarget>x64</PlatformTarget>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <SelfContained>false</SelfContained>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1"/>
+        <PackageReference Include="xunit" Version="2.9.2"/>
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\WinFormsApp1.csproj"/>
+    </ItemGroup>
+
+</Project>

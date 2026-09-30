@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <!-- 程序集 / exe 名用英文 PonyView：已实测中文 exe 名（小马看图.exe）会触发 360 报 Trojan.Generic，改英文名后同一套代码不报毒；中文显示名“小马看图”仍用于 MainForm.AppTitle 与 .iss MyAppName，用户界面全中文 -->
+        <AssemblyName>PonyView</AssemblyName>
+        <!-- 应用图标：多尺寸 app.ico（16/32/48/256），exe 在任务栏 / 资源管理器 / 标题栏都显示它 -->
+        <ApplicationIcon>app.ico</ApplicationIcon>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWindowsForms>true</UseWindowsForms>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <!-- Magick.NET-Q8-x64 仅提供 x64 原生库，固定平台避免在 x86 下启动失败 -->
+        <PlatformTarget>x64</PlatformTarget>
+        <!-- 指定 RID 后只复制 win-x64 原生库，否则输出目录会多出 Linux/macOS 共 ~110MB 无用文件 -->
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <SelfContained>false</SelfContained>
+        <!-- xUnit 测试项目放在子目录，排除以免主项目默认通配把测试代码也编进来 -->
+        <DefaultItemExcludes>$(DefaultItemExcludes);WinFormsApp1.Tests\**</DefaultItemExcludes>
+        <!-- 发布时预编译为 ReadyToRun（R2R）：把 IL 提前编译为本机码加快启动；已实测与 360 报毒无关（根因是未签名），故恢复开启。仅在 publish 生效 -->
+        <PublishReadyToRun>true</PublishReadyToRun>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- 图片解码：PSD / TGA / WebP / HEIC / HEIF / AVIF / SVG / RAW / JXL / QOI 等 -->
+        <PackageReference Include="Magick.NET-Q8-x64" Version="14.17.2"/>
+        <PackageReference Include="Magick.NET.SystemDrawing" Version="8.0.28"/>
+    </ItemGroup>
+
+</Project>
