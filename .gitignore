@@ -38,3 +38,6 @@ packages/
 # ---- Misc ----
 *.log
 *.tmp
+
+# ---- Local-only docs (for local AI / handover, NOT for GitHub) ----
+PROJECT_HANDOVER.md
