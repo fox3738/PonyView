@@ -35,9 +35,15 @@
 
 ## 🖼️ 截图
 
-> 截图待补充。建议放置于 `docs/screenshots/` 后在此引用：
->
-> `![主界面](docs/screenshots/main.png)`
+### 主界面：透明背景 / 工具栏 / 状态栏
+打开一张带 Alpha 通道的 PNG，棋盘格表示透明区域；顶部工具栏含导航、缩放、旋转、动画、通道切换，底部状态栏显示尺寸 / 格式 / 大小 / 帧号 / 缩放比。
+
+![主界面](docs/screenshots/main.png)
+
+### 缩略图侧栏 + 元数据信息面板 + 通道显示
+左侧为同目录缩略图导航（懒加载），右侧「图片信息」面板列出文件名 / 目录 / 格式 / 尺寸 / 大小 / 修改时间；中间展示 Alpha 通道单通道视图。
+
+![缩略图侧栏与信息面板](docs/screenshots/sidebar-info.png)
 
 ---
 
@@ -128,6 +134,7 @@ WinFormsApp1/
 ├── ThumbnailSidebar.cs     # 缩略图侧栏（懒加载）
 ├── WinFormsApp1.Tests/     # xUnit 单元测试（含 ImageCache 多线程并发测试）
 ├── installer/              # Inno Setup 打包脚本（.iss）
+├── docs/screenshots/       # README 截图
 ├── build-installer.ps1     # 一键发布 + 打包脚本
 ├── app.ico                 # 多尺寸应用图标（16/32/48/256）
 └── PROJECT_HANDOVER.md     # 架构交接文档（ImageCache 引用计数设计等）
