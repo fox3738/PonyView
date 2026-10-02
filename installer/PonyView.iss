@@ -1,18 +1,22 @@
 ; ------------------------------------------------------------------
-;  图片查看器 —— Inno Setup 安装脚本（自包含 + setup.exe）
+;  小马看图 (PonyView) —— Inno Setup 安装脚本（自包含 + setup.exe）
 ;
 ;  步骤 1：先做自包含发布（脚本会打包这个目录的全部内容）
 ;    dotnet publish WinFormsApp1.csproj -c Release -r win-x64 --self-contained true -o bin\Publish\win-x64
 ;
 ;  步骤 2：用 Inno Setup 编译器 ISCC.exe 编译本脚本
-;    & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer\图片查看器.iss"
-;    产物：bin\Publish\Installer\图片查看器-Setup-1.0.0.exe
+;    & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer\PonyView.iss"
+;    产物：bin\Publish\Installer\PonyView-Setup-{#MyAppVersion}.exe（文件名用英文，避免杀软误报）
+;
+;  命名约定：显示名用中文「小马看图」，可执行/文件名一律用英文 PonyView
 ; ------------------------------------------------------------------
 
 #define MyAppName      "小马看图"
-#define MyAppVersion   "1.0.0"
+#define MyAppVersion   "1.0.1"
 #define MyAppPublisher "PonyView"
 #define MyAppExeName   "PonyView.exe"
+; 安装程序文件名固定用英文（不随 MyAppName），避免中文文件名触发杀软误报
+#define MySetupName    "PonyView"
 ; 相对本脚本所在目录 installer\，指向自包含发布目录
 #define PublishDir     "..\bin\Publish\win-x64"
 
@@ -30,7 +34,7 @@ DisableProgramGroupPage=yes
 PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=..\bin\Publish\Installer
-OutputBaseFilename={#MyAppName}-Setup-{#MyAppVersion}
+OutputBaseFilename={#MySetupName}-Setup-{#MyAppVersion}
 Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern
@@ -110,7 +114,7 @@ var
 begin
   FormatPage := CreateCustomPage(wpSelectDir,
     '选择要关联的图片格式',
-    '勾选希望默认用「图片查看器」打开的格式；未勾选的保持不变。关联对当前 Windows 用户生效。' + #13#10 +
+    '勾选希望默认用「小马看图」打开的格式；未勾选的保持不变。关联对当前 Windows 用户生效。' + #13#10 +
     '注：对已被其他程序占用的常见格式（如 .jpg），Windows 10/11 可能仍保留原默认程序，可在「设置 > 默认应用」中确认。');
 
   FormatList := TNewCheckListBox.Create(FormatPage);
