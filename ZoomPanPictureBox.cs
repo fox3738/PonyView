@@ -545,7 +545,7 @@ public sealed class ZoomPanPictureBox : Control
 
     // ---------------------------------------------------------------- 通道分离渲染
 
-    /// <summary>按当前 <see cref="ChannelMode"/> 绘制帧：RGB 通道用颜色矩阵隔离，Alpha 通道以灰度显示；除 Alpha 外均先垫棋盘格，透明处露出棋盘格。</summary>
+    /// <summary>按当前 <see cref="ChannelMode"/> 绘制帧：各通道（R/G/B/A）视图均恒为不透明，只呈现该通道的原始数值；仅完整显示（Full）模式先垫棋盘格以露出透明区域。</summary>
     private void DrawFrame(Graphics g, Image frame, RectangleF destRect, RectangleF srcRect)
     {
         Rectangle dest = Rectangle.Round(destRect);
@@ -561,8 +561,7 @@ public sealed class ZoomPanPictureBox : Control
             case ChannelMode.Red:
             case ChannelMode.Green:
             case ChannelMode.Blue:
-                // 先垫棋盘格，透明处露出棋盘格；再用颜色矩阵隔离出单个颜色通道
-                FillChecker(g, destRect);
+                // 通道视图恒为不透明：只呈现该通道的原始数值，不垫棋盘格、也不再应用源 Alpha
                 ChannelAttrs.SetColorMatrix(ChannelColorMatrix(_channelMode));
                 g.DrawImage(frame, dest, srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height,
                     GraphicsUnit.Pixel, ChannelAttrs);
@@ -603,20 +602,21 @@ public sealed class ZoomPanPictureBox : Control
         _ => AlphaMatrix
     };
 
-    /// <summary>把指定颜色通道单独保留、其余通道置零的颜色矩阵（Alpha 始终保留）。</summary>
+    /// <summary>把指定颜色通道单独保留、其余通道置零的颜色矩阵（丢弃源 Alpha，输出恒为不透明）。</summary>
     private static ColorMatrix BuildChannelMatrix(ChannelMode mode)
     {
         float r = mode == ChannelMode.Red ? 1f : 0f;
         float gr = mode == ChannelMode.Green ? 1f : 0f;
         float b = mode == ChannelMode.Blue ? 1f : 0f;
 
+        // GDI+ 颜色矩阵约定：行 = 输入分量(R,G,B,A,常量1)，列 = 输出分量(R',G',B',A',W')
         return new ColorMatrix(new[]
         {
             new[] { r, 0f, 0f, 0f, 0f },
             new[] { 0f, gr, 0f, 0f, 0f },
             new[] { 0f, 0f, b, 0f, 0f },
-            new[] { 0f, 0f, 0f, 1f, 0f },
-            new[] { 0f, 0f, 0f, 0f, 1f }
+            new[] { 0f, 0f, 0f, 0f, 0f }, // 源 Alpha 不再参与输出：查看 RGB 通道时不应应用 Alpha
+            new[] { 0f, 0f, 0f, 1f, 0f }  // 常量 1 → 输出 Alpha 恒为 1（不透明），与 Alpha 通道模式写法一致
         });
     }
 
