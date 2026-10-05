@@ -79,6 +79,10 @@ public sealed class MainForm : Form
     {
         base.OnShown(e);
 
+        // 后台预热“格式转换为”菜单所需的 Magick 可写格式列表，避免在 UI 线程上
+        // 首次加载 Magick.NET 原生库造成窗口已显示后的卡顿。不影响启动速度。
+        _ = Task.Run(() => { _ = ImageLoader.WritableFormats; });
+
         if (!string.IsNullOrWhiteSpace(InitialImagePath) && File.Exists(InitialImagePath))
         {
             _ = LoadImageAsync(InitialImagePath!);
@@ -604,14 +608,27 @@ public sealed class MainForm : Form
         var saveAs = new ToolStripMenuItem("另存为(&A)…") { ShortcutKeyDisplayString = "Ctrl+Shift+S" };
         saveAs.Click += (_, _) => SaveAs();
 
+        // 不在构造时枚举可写格式：那会提前加载 Magick.NET 原生库（约 30MB）并枚举
+        // 全部可写格式，拖慢启动。改为懒填充——首次展开子菜单时再填；OnShown 里已
+        // 在后台预热，正常情况下用户展开时列表已就绪，无卡顿。
         var convert = new ToolStripMenuItem("格式转换为(&F)");
-        foreach (WriteFormat format in ImageLoader.WritableFormats)
+        bool convertFilled = false;
+        convert.DropDownOpening += (_, _) =>
         {
-            WriteFormat captured = format;
-            var item = new ToolStripMenuItem($"{format.Label} (*{format.Extension})");
-            item.Click += (_, _) => ConvertToFormat(captured);
-            convert.DropDownItems.Add(item);
-        }
+            if (convertFilled)
+            {
+                return;
+            }
+
+            convertFilled = true;
+            foreach (WriteFormat format in ImageLoader.WritableFormats)
+            {
+                WriteFormat captured = format;
+                var item = new ToolStripMenuItem($"{format.Label} (*{format.Extension})");
+                item.Click += (_, _) => ConvertToFormat(captured);
+                convert.DropDownItems.Add(item);
+            }
+        };
 
         var copy = new ToolStripMenuItem("复制图片(&P)") { ShortcutKeyDisplayString = "Ctrl+C" };
         copy.Click += (_, _) => CopyImageToClipboard();

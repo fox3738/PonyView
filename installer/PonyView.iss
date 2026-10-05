@@ -12,7 +12,7 @@
 ; ------------------------------------------------------------------
 
 #define MyAppName      "小马看图"
-#define MyAppVersion   "1.0.1"
+#define MyAppVersion   "1.0.2"
 #define MyAppPublisher "PonyView"
 #define MyAppExeName   "PonyView.exe"
 ; 安装程序文件名固定用英文（不随 MyAppName），避免中文文件名触发杀软误报
