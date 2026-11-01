@@ -74,6 +74,19 @@ public sealed class GifImageLoader : IImageLoader
     public DecodedImage Load(ImageLoadRequest request) => ImageLoader.LoadGif(request.Path, request.Bytes);
 }
 
+/// <summary>
+/// 常见位图格式的 GDI+ 快速通道：JPEG/PNG/BMP 交给系统解码器，
+/// 比单线程的 Magick.NET-Q8 快约 2 倍；不可靠的情况（CMYK、损坏、 exotic 子类型）内部回退 Magick。
+/// </summary>
+public sealed class GdiFastImageLoader : IImageLoader
+{
+    public string Name => "常见位图 (GDI+ 快速通道)";
+    public int Priority => 15;
+    public bool CanLoad(string extension) => ImageLoader.GdiFastExtensions.Contains(extension);
+    public DecodedImage Load(ImageLoadRequest request) =>
+        ImageLoader.LoadWithGdiFast(request.Path, request.Bytes, request.Extension);
+}
+
 /// <summary>图元文件（WMF/EMF）加载器：只能由 GDI+ 解码。</summary>
 public sealed class MetafileImageLoader : IImageLoader
 {
@@ -174,6 +187,7 @@ public static class ImageLoaderFactory
     private static readonly IImageLoader[] Loaders = new IImageLoader[]
     {
         new GifImageLoader(),
+        new GdiFastImageLoader(),
         new MetafileImageLoader(),
         new SvgImageLoader(),
         new RawImageLoader(),

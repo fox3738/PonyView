@@ -10,6 +10,9 @@
         <Nullable>enable</Nullable>
         <UseWindowsForms>true</UseWindowsForms>
         <ImplicitUsings>enable</ImplicitUsings>
+        <!-- 版本号：与 installer\PonyView.iss 的 MyAppVersion 保持一致。
+             写进 exe 的文件属性，右键「属性 → 详细信息」即可确认当前跑的是哪一版，避免误测旧构建 -->
+        <Version>1.0.3</Version>
         <!-- Magick.NET-Q8-x64 仅提供 x64 原生库，固定平台避免在 x86 下启动失败 -->
         <PlatformTarget>x64</PlatformTarget>
         <!-- 指定 RID 后只复制 win-x64 原生库，否则输出目录会多出 Linux/macOS 共 ~110MB 无用文件 -->

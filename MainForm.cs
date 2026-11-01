@@ -852,7 +852,7 @@ public sealed class MainForm : Form
             SetBusy(false, null);
             UpdateUiState();
             UpdatePlaybackUi();
-            PreloadNeighbors(); // 提前在后台解码相邻图片，切换时命中缓存
+            ScheduleNeighborPreload(); // 等首帧画完再开始预加载，避免和当前图抢 CPU
 
             if (_thumbnails.Visible)
             {
@@ -893,22 +893,44 @@ public sealed class MainForm : Form
         }
     }
 
-    /// <summary>在后台预加载相邻（下一张 / 上一张）图片进缓存，使来回浏览时能直接命中，无需重新解码。</summary>
-    private void PreloadNeighbors()
+    /// <summary>
+    /// 挂一次性 Paint 回调：等主图首帧真正画完再启动预加载。
+    /// 之前在解码刚完成时就立刻发起两张全尺寸预加载，会和当前图的绘制、缩略图生成一起把核心占满，
+    /// 表现成「每切一张都慢」。
+    /// </summary>
+    private void ScheduleNeighborPreload()
     {
-        if (_files.Count <= 1 || _currentIndex < 0)
+        if (_files.Count <= 1 || _currentIndex < 0 || !_pictureBox.IsHandleCreated)
+        {
+            return;
+        }
+
+        // 先减再加，保证同一时刻最多只有一个待触发的回调
+        _pictureBox.Paint -= PictureBoxPaintedOnce;
+        _pictureBox.Paint += PictureBoxPaintedOnce;
+    }
+
+    private void PictureBoxPaintedOnce(object? sender, PaintEventArgs e)
+    {
+        _pictureBox.Paint -= PictureBoxPaintedOnce;
+        PreloadNext();
+    }
+
+    /// <summary>只预加载下一张：向后浏览是主要方向，一次预读两张会让大图目录长期满载解码。</summary>
+    private void PreloadNext()
+    {
+        if (_files.Count <= 1 || _currentIndex < 0 || _currentIndex >= _files.Count)
         {
             return;
         }
 
         string next = _files[(_currentIndex + 1) % _files.Count];
-        _ = ImageLoader.PreloadAsync(next);
-
-        string prev = _files[(_currentIndex - 1 + _files.Count) % _files.Count];
-        if (!string.Equals(prev, next, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(next, _currentPath, StringComparison.OrdinalIgnoreCase))
         {
-            _ = ImageLoader.PreloadAsync(prev);
+            return;
         }
+
+        _ = ImageLoader.PreloadAsync(next);
     }
 
     private void UpdateInfoLabel(DecodedImage decoded)
